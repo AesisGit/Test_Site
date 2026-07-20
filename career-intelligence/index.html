@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Career Intelligence Engine — Adaptive Prototype</title>
+  <style>
+    :root {
+      --bg:#f5f7fb;
+      --panel:#ffffff;
+      --text:#172033;
+      --muted:#596579;
+      --line:#d9e0ea;
+      --accent:#185adb;
+      --accent-2:#0f3f9f;
+      --good:#137a4b;
+      --warn:#9a5b00;
+      --shadow:0 14px 40px rgba(26,39,67,.10);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+    button,input,select{font:inherit}
+    .shell{max-width:1040px;margin:0 auto;padding:24px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:22px}
+    .brand{font-size:17px;font-weight:800;letter-spacing:.2px}
+    .badge{font-size:12px;font-weight:700;background:#e8efff;color:#174ca7;padding:7px 10px;border-radius:999px}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(22px,4vw,44px)}
+    h1{font-size:clamp(34px,5vw,62px);line-height:1.02;margin:0 0 18px;letter-spacing:-1.6px}
+    h2{font-size:clamp(26px,3.4vw,38px);line-height:1.12;margin:0 0 12px}
+    h3{margin:0 0 8px;font-size:20px}
+    p{margin:0 0 16px}
+    .lead{font-size:clamp(18px,2.2vw,23px);color:var(--muted);max-width:790px}
+    .hero-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:26px;align-items:start}
+    .metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .metric{border:1px solid var(--line);border-radius:14px;padding:15px;background:#fafcff}
+    .metric strong{display:block;font-size:26px;line-height:1.1}
+    .metric span{font-size:13px;color:var(--muted)}
+    .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+    .btn{border:0;border-radius:12px;padding:13px 18px;font-weight:800;cursor:pointer;transition:.16s ease}
+    .btn-primary{background:var(--accent);color:#fff}
+    .btn-primary:hover{background:var(--accent-2);transform:translateY(-1px)}
+    .btn-secondary{background:#edf2fa;color:var(--text)}
+    .btn-secondary:hover{background:#e1e8f3}
+    .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
+    .small{font-size:13px;color:var(--muted)}
+    .hidden{display:none!important}
+    .progress-wrap{margin-bottom:28px}
+    .progress-line{height:10px;background:#e7ecf3;border-radius:999px;overflow:hidden}
+    .progress-fill{height:100%;background:var(--accent);width:0;transition:width .25s ease}
+    .progress-meta{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:8px}
+    .question-kicker{font-size:13px;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.8px;margin-bottom:9px}
+    .question{font-size:clamp(25px,3.7vw,39px);line-height:1.16;font-weight:800;letter-spacing:-.6px;margin-bottom:28px;max-width:880px}
+    .scale{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+    .scale button{min-height:82px;border:1px solid var(--line);background:#fff;border-radius:13px;cursor:pointer;padding:10px 6px;font-weight:700;color:var(--text)}
+    .scale button:hover,.scale button:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(24,90,219,.12);outline:none}
+    .scale .num{display:block;font-size:22px;color:var(--accent);margin-bottom:3px}
+    .navrow{display:flex;justify-content:space-between;align-items:center;margin-top:22px;gap:12px}
+    .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+    label{font-weight:800;font-size:14px;display:block;margin-bottom:7px}
+    select,input{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff;color:var(--text)}
+    .result-header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:22px}
+    .confidence{background:#edf8f2;color:var(--good);font-weight:800;padding:8px 12px;border-radius:999px;white-space:nowrap}
+    .score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0 28px}
+    .score-card{border:1px solid var(--line);border-radius:14px;padding:15px}
+    .score-card .score{font-size:29px;font-weight:900;line-height:1}
+    .score-card .label{font-size:12px;color:var(--muted);margin-top:6px}
+    .matches{display:grid;gap:14px}
+    .match{border:1px solid var(--line);border-radius:16px;padding:19px;display:grid;grid-template-columns:1fr auto;gap:14px;align-items:start}
+    .match-title{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .rank{height:30px;min-width:30px;border-radius:9px;background:#eaf0ff;color:#174ca7;display:grid;place-items:center;font-weight:900}
+    .match-score{font-size:34px;font-weight:900;color:var(--accent);line-height:1}
+    .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+    .tag{font-size:12px;background:#f0f3f8;border-radius:999px;padding:6px 9px;color:#42506a}
+    .insight-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:24px}
+    .insight{border:1px solid var(--line);border-radius:15px;padding:18px;background:#fcfdff}
+    ul{margin:9px 0 0;padding-left:20px}
+    li{margin:5px 0}
+    .coach{margin-top:24px;border:1px solid #cdd9f4;background:#f6f9ff;border-radius:16px;padding:21px}
+    .coach pre{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px;font-family:Arial,Helvetica,sans-serif;font-size:14px;max-height:320px;overflow:auto}
+    .notice{border-left:4px solid var(--warn);background:#fff8ea;padding:12px 14px;border-radius:8px;color:#704400;margin-top:20px;font-size:13px}
+    @media(max-width:760px){
+      .shell{padding:14px}.hero-grid,.form-grid,.insight-grid{grid-template-columns:1fr}.score-grid{grid-template-columns:repeat(2,1fr)}
+      .scale{grid-template-columns:1fr}.scale button{min-height:56px;text-align:left;padding:12px 16px}.scale .num{display:inline;margin-right:9px}
+      .result-header{display:block}.confidence{display:inline-block;margin-top:10px}.match{grid-template-columns:1fr}.match-score{font-size:28px}
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <div class="topbar">
+      <div class="brand">Career Intelligence Engine</div>
+      <div class="badge">Adaptive prototype v0.1</div>
+    </div>
+
+    <section id="welcome" class="panel">
+      <div class="hero-grid">
+        <div>
+          <h1>Find the right career without taking a generic personality quiz.</h1>
+          <p class="lead">This adaptive assessment measures what energises you, how you work, what you can realistically change and which career directions deserve a real-world trial.</p>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="startTest('rapid')">Start rapid assessment</button>
+            <button class="btn btn-secondary" onclick="startTest('deep')">Run deeper assessment</button>
+          </div>
+          <p class="small" style="margin-top:14px">Rapid mode asks approximately 16–22 questions. Deep mode gathers more evidence before making recommendations.</p>
+        </div>
+        <div class="metric-grid">
+          <div class="metric"><strong>4</strong><span>separate decision scores</span></div>
+          <div class="metric"><strong>12</strong><span>career families modelled</span></div>
+          <div class="metric"><strong>Adaptive</strong><span>questions chosen by information value</span></div>
+          <div class="metric"><strong>Action-led</strong><span>results end with a career experiment</span></div>
+        </div>
+      </div>
+      <div class="notice">Prototype note: this tool supports career exploration. It is not yet a validated psychometric instrument and must not be used for hiring, selection or diagnosis.</div>
+    </section>
+
+    <section id="test" class="panel hidden">
+      <div class="progress-wrap">
+        <div class="progress-meta"><span id="progressText">Question 1</span><span id="modeText">Rapid assessment</span></div>
+        <div class="progress-line"><div id="progressFill" class="progress-fill"></div></div>
+      </div>
+      <div id="questionKicker" class="question-kicker">Work preference</div>
+      <div id="questionText" class="question"></div>
+      <div class="scale" id="answerScale">
+        <button onclick="answer(1)"><span class="num">1</span>Strongly disagree</button>
+        <button onclick="answer(2)"><span class="num">2</span>Disagree</button>
+        <button onclick="answer(3)"><span class="num">3</span>Not sure</button>
+        <button onclick="answer(4)"><span class="num">4</span>Agree</button>
+        <button onclick="answer(5)"><span class="num">5</span>Strongly agree</button>
+      </div>
+      <div class="navrow">
+        <button class="btn btn-ghost" onclick="back()" id="backBtn">Back</button>
+        <span class="small" id="adaptiveNote">The next question is selected from your current profile.</span>
+      </div>
+    </section>
+
+    <section id="constraints" class="panel hidden">
+      <h2>Reality check</h2>
+      <p class="lead" style="font-size:18px">Strong recommendations must fit your circumstances, not just your interests.</p>
+      <div class="form-grid" style="margin-top:24px">
+        <div><label for="salary">Minimum acceptable annual income</label><select id="salary"><option value="0">No fixed minimum</option><option value="24000">£24,000</option><option value="30000">£30,000</option><option value="40000">£40,000</option><option value="50000">£50,000</option><option value="65000">£65,000+</option></select></div>
+        <div><label for="training">Maximum training time before entry</label><select id="training"><option value="0">Immediate entry preferred</option><option value="3">Up to 3 months</option><option value="12">Up to 12 months</option><option value="36">Up to 3 years</option><option value="84">Long professional route is acceptable</option></select></div>
+        <div><label for="stability">Need for predictable income</label><select id="stability"><option value="5">Very high</option><option value="4">High</option><option value="3">Moderate</option><option value="2">Low</option><option value="1">I accept significant uncertainty</option></select></div>
+        <div><label for="travel">Travel willingness</label><select id="travel"><option value="1">Local only</option><option value="2">Occasional travel</option><option value="3">Regional travel</option><option value="4">Frequent UK travel</option><option value="5">International / rotational work</option></select></div>
+        <div><label for="physical">Physical work preference</label><select id="physical"><option value="1">Avoid physical work</option><option value="2">Mostly desk-based</option><option value="3">Mixed</option><option value="4">Active work preferred</option><option value="5">Highly physical work is fine</option></select></div>
+        <div><label for="remote">Remote-work preference</label><select id="remote"><option value="1">On-site is fine</option><option value="2">Mostly on-site</option><option value="3">Hybrid</option><option value="4">Mostly remote</option><option value="5">Remote is essential</option></select></div>
+      </div>
+      <div class="actions"><button class="btn btn-primary" onclick="finishTest()">Generate career intelligence report</button></div>
+    </section>
+
+    <section id="results" class="panel hidden">
+      <div class="result-header">
+        <div><div class="question-kicker">Your decision profile</div><h2 id="profileTitle">Career profile</h2><p id="profileSummary" class="lead" style="font-size:18px"></p></div>
+        <div id="confidenceBadge" class="confidence">Confidence 78%</div>
+      </div>
+      <div class="score-grid" id="decisionScores"></div>
+      <h3>Best career directions to investigate</h3>
+      <div id="matches" class="matches"></div>
+      <div class="insight-grid">
+        <div class="insight"><h3>Strongest drivers</h3><ul id="drivers"></ul></div>
+        <div class="insight"><h3>Watch-outs</h3><ul id="risks"></ul></div>
+      </div>
+      <div class="coach">
+        <h3>Your first career experiment</h3>
+        <p id="experiment"></p>
+        <h3 style="margin-top:22px">AI coach briefing</h3>
+        <p class="small">Use this briefing with an AI coach to continue from evidence rather than restarting with generic questions.</p>
+        <pre id="coachPrompt"></pre>
+        <div class="actions">
+          <button class="btn btn-primary" onclick="copyCoachPrompt()">Copy coach briefing</button>
+          <button class="btn btn-secondary" onclick="restart()">Retake assessment</button>
+        </div>
+      </div>
+      <div class="notice">The recommended next step is a low-cost experiment, not an irreversible decision. Career confidence should increase through evidence from conversations, shadowing, tasks, applications and short training trials.</div>
+    </section>
+  </main>
+<script>
+const dimensions = [
+  'R','I','A','S','E','C',
+  'autonomy','security','impact','mastery','variety','status',
+  'structure','collaboration','persuasion','analysis','handsOn','creativity'
+];
+
+const questionBank = [
+  {id:'q1',cat:'Interests',text:'I enjoy repairing, building or operating real equipment.',w:{R:1,handsOn:.8}},
+  {id:'q2',cat:'Interests',text:'I like investigating why a system, result or problem behaves as it does.',w:{I:1,analysis:.8}},
+  {id:'q3',cat:'Interests',text:'I want room to create original ideas, designs, stories or experiences.',w:{A:1,creativity:.9}},
+  {id:'q4',cat:'Interests',text:'I gain energy from helping, teaching or developing other people.',w:{S:1,collaboration:.7,impact:.4}},
+  {id:'q5',cat:'Interests',text:'I enjoy influencing decisions, negotiating or creating commercial momentum.',w:{E:1,persuasion:.9,status:.3}},
+  {id:'q6',cat:'Interests',text:'I like organising information, records, schedules or processes accurately.',w:{C:1,structure:.9}},
+  {id:'q7',cat:'Work style',text:'I would rather solve a difficult technical problem than manage a social situation.',w:{I:.7,analysis:1,S:-.35}},
+  {id:'q8',cat:'Work style',text:'I prefer a clearly defined method over inventing my own approach.',w:{structure:1,C:.7,creativity:-.5,autonomy:-.25}},
+  {id:'q9',cat:'Work style',text:'I am comfortable making decisions when information is incomplete.',w:{E:.5,autonomy:.7,analysis:.3,security:-.45}},
+  {id:'q10',cat:'Work style',text:'I prefer visible, tangible results at the end of a working day.',w:{R:.6,handsOn:1}},
+  {id:'q11',cat:'Work style',text:'I naturally spot inconsistencies, risks or weak evidence.',w:{analysis:1,I:.6,C:.35}},
+  {id:'q12',cat:'Work style',text:'I can sustain attention on detailed work when accuracy matters.',w:{C:.8,structure:.7,mastery:.45}},
+  {id:'q13',cat:'Work style',text:'Frequent interaction with customers, colleagues or stakeholders energises me.',w:{S:.8,E:.5,collaboration:1}},
+  {id:'q14',cat:'Work style',text:'I enjoy presenting an argument and bringing others with me.',w:{E:.8,persuasion:1,S:.3}},
+  {id:'q15',cat:'Work style',text:'I am happiest when I can work independently for long periods.',w:{autonomy:1,collaboration:-.65,S:-.3}},
+  {id:'q16',cat:'Work style',text:'Repetition drains me, even when I am good at the task.',w:{variety:1,structure:-.45,C:-.25}},
+  {id:'q17',cat:'Values',text:'Freedom over how I work matters more than a prestigious title.',w:{autonomy:1,status:-.7}},
+  {id:'q18',cat:'Values',text:'I would accept slower progression in exchange for dependable income.',w:{security:1,E:-.25}},
+  {id:'q19',cat:'Values',text:'The work must make a useful difference to people, organisations or society.',w:{impact:1,S:.45}},
+  {id:'q20',cat:'Values',text:'I want a career in which expertise and continual improvement are central.',w:{mastery:1,I:.35}},
+  {id:'q21',cat:'Values',text:'I want changing challenges rather than one narrow, stable remit.',w:{variety:1,security:-.25}},
+  {id:'q22',cat:'Values',text:'Recognition, authority and visible advancement are important to me.',w:{status:1,E:.55}},
+  {id:'q23',cat:'Interests',text:'I would enjoy interpreting regulations, contracts, evidence or formal rules.',w:{C:.6,I:.55,analysis:.8,structure:.45}},
+  {id:'q24',cat:'Interests',text:'I would enjoy turning a disorganised operation into a reliable system.',w:{E:.45,C:.65,structure:.75,impact:.3}},
+  {id:'q25',cat:'Interests',text:'I would enjoy using software and automation to remove repetitive work.',w:{I:.7,C:.45,analysis:.7,creativity:.35}},
+  {id:'q26',cat:'Interests',text:'I would enjoy coaching someone through a difficult decision or transition.',w:{S:.9,impact:.7,collaboration:.5}},
+  {id:'q27',cat:'Interests',text:'I would enjoy taking responsibility for a high-value project, asset or operation.',w:{E:.65,R:.4,status:.35,mastery:.35}},
+  {id:'q28',cat:'Interests',text:'I would enjoy researching a complex topic and producing a defensible conclusion.',w:{I:.9,analysis:1,mastery:.5}},
+  {id:'q29',cat:'Work style',text:'I remain effective when priorities change quickly.',w:{variety:.8,autonomy:.4,structure:-.35}},
+  {id:'q30',cat:'Work style',text:'I prefer improving an existing system to starting from a blank page.',w:{C:.45,structure:.55,creativity:-.35}}
+];
+
+const careers = [
+  {name:'Engineering, plant and technical operations',vec:{R:.95,I:.55,A:.1,S:.2,E:.35,C:.55,autonomy:.45,security:.7,impact:.45,mastery:.8,variety:.55,status:.45,structure:.65,collaboration:.35,persuasion:.15,analysis:.6,handsOn:1,creativity:.25},req:{salary:38000,training:6,stability:4,travel:4,physical:4,remote:1},tags:['Tangible results','Technical mastery','Strong earnings'],risk:'May require refreshed tickets, medical suitability or recent site experience.',experiment:'Speak to two employers or agencies and complete one realistic entry-pathway and earnings check.'},
+  {name:'Operations and project management',vec:{R:.35,I:.5,A:.2,S:.55,E:.75,C:.85,autonomy:.6,security:.7,impact:.65,mastery:.65,variety:.7,status:.65,structure:.9,collaboration:.8,persuasion:.6,analysis:.75,handsOn:.3,creativity:.4},req:{salary:45000,training:3,stability:4,travel:3,physical:2,remote:3},tags:['Systems','Ownership','Transferable'],risk:'Can involve constant stakeholder pressure and responsibility without full authority.',experiment:'Choose one broken process you know well and produce a one-page improvement plan with measures.'},
+  {name:'Business advisory and consulting',vec:{R:.2,I:.7,A:.4,S:.65,E:.85,C:.55,autonomy:.85,security:.35,impact:.75,mastery:.75,variety:.95,status:.7,structure:.45,collaboration:.75,persuasion:.85,analysis:.85,handsOn:.15,creativity:.65},req:{salary:50000,training:0,stability:2,travel:3,physical:1,remote:4},tags:['Autonomy','Variety','Commercial impact'],risk:'Income can be uneven and success depends on positioning, proof and client acquisition.',experiment:'Offer a tightly scoped diagnostic to one real business and test whether they value the outcome.'},
+  {name:'Compliance, governance and investigation',vec:{R:.15,I:.85,A:.15,S:.35,E:.45,C:.95,autonomy:.55,security:.8,impact:.65,mastery:.85,variety:.55,status:.55,structure:.9,collaboration:.45,persuasion:.5,analysis:1,handsOn:.1,creativity:.2},req:{salary:42000,training:12,stability:5,travel:2,physical:1,remote:3},tags:['Evidence','Risk control','Public trust'],risk:'Detailed casework and institutional constraints can feel slow or frustrating.',experiment:'Analyse a published regulatory case and write a concise findings-and-controls memo.'},
+  {name:'Technology, automation and systems design',vec:{R:.25,I:.95,A:.55,S:.25,E:.5,C:.7,autonomy:.8,security:.65,impact:.7,mastery:.95,variety:.8,status:.55,structure:.65,collaboration:.45,persuasion:.35,analysis:1,handsOn:.3,creativity:.7},req:{salary:52000,training:12,stability:4,travel:1,physical:1,remote:5},tags:['Leverage','Problem solving','Remote potential'],risk:'Requires demonstrable technical capability and continuous learning, not just tool familiarity.',experiment:'Build one small automation that saves a real user measurable time and document the before/after.'},
+  {name:'Sales and business development',vec:{R:.15,I:.3,A:.4,S:.75,E:1,C:.35,autonomy:.7,security:.35,impact:.55,mastery:.45,variety:.9,status:.8,structure:.35,collaboration:.85,persuasion:1,analysis:.4,handsOn:.1,creativity:.55},req:{salary:48000,training:0,stability:2,travel:4,physical:1,remote:3},tags:['Influence','High upside','Fast entry'],risk:'Targets, rejection and variable pay can create sustained pressure.',experiment:'Run ten structured outreach conversations around a product or service you can credibly explain.'},
+  {name:'Education, training and coaching',vec:{R:.15,I:.55,A:.5,S:1,E:.55,C:.5,autonomy:.65,security:.55,impact:1,mastery:.7,variety:.65,status:.4,structure:.55,collaboration:.9,persuasion:.65,analysis:.55,handsOn:.15,creativity:.65},req:{salary:36000,training:12,stability:3,travel:2,physical:1,remote:3},tags:['Human impact','Communication','Expertise'],risk:'Emotional labour and lower early earnings can outweigh the sense of purpose.',experiment:'Deliver a 20-minute teaching session on a topic you know and collect structured feedback.'},
+  {name:'Creative content and communication',vec:{R:.1,I:.4,A:1,S:.55,E:.55,C:.25,autonomy:.85,security:.25,impact:.65,mastery:.65,variety:.95,status:.55,structure:.25,collaboration:.55,persuasion:.65,analysis:.45,handsOn:.15,creativity:1},req:{salary:35000,training:0,stability:2,travel:1,physical:1,remote:5},tags:['Originality','Portfolio-led','Flexible'],risk:'Crowded markets and inconsistent income make specialisation and distribution essential.',experiment:'Publish three pieces for one tightly defined audience and measure response, not just output.'},
+  {name:'Data, research and analysis',vec:{R:.1,I:1,A:.25,S:.25,E:.3,C:.8,autonomy:.7,security:.75,impact:.6,mastery:1,variety:.55,status:.5,structure:.75,collaboration:.35,persuasion:.25,analysis:1,handsOn:.1,creativity:.4},req:{salary:47000,training:18,stability:4,travel:1,physical:1,remote:4},tags:['Deep analysis','Evidence','Specialism'],risk:'Entry barriers can be high and prolonged solitary work may reduce energy for some people.',experiment:'Complete a small analysis using a public dataset and explain the decision implications in plain English.'},
+  {name:'Public service and enforcement',vec:{R:.55,I:.5,A:.1,S:.65,E:.55,C:.8,autonomy:.35,security:.9,impact:.9,mastery:.55,variety:.65,status:.45,structure:.9,collaboration:.8,persuasion:.55,analysis:.65,handsOn:.55,creativity:.15},req:{salary:38000,training:6,stability:5,travel:3,physical:3,remote:1},tags:['Purpose','Teamwork','Security'],risk:'Rigid procedures, shift patterns and organisational culture may limit autonomy.',experiment:'Interview someone doing the role and map the actual shift pattern, discretion and progression route.'},
+  {name:'Entrepreneurship and venture building',vec:{R:.25,I:.65,A:.75,S:.55,E:1,C:.35,autonomy:1,security:.05,impact:.85,mastery:.7,variety:1,status:.75,structure:.2,collaboration:.7,persuasion:.9,analysis:.7,handsOn:.35,creativity:.9},req:{salary:60000,training:0,stability:1,travel:3,physical:2,remote:4},tags:['Maximum autonomy','Creation','Upside'],risk:'High ambiguity, delayed income and broad responsibility can amplify financial and cognitive pressure.',experiment:'Pre-sell one defined outcome before building a wider product or service.'},
+  {name:'Skilled craft, maintenance and field service',vec:{R:1,I:.45,A:.25,S:.35,E:.3,C:.6,autonomy:.55,security:.75,impact:.55,mastery:.85,variety:.65,status:.35,structure:.65,collaboration:.45,persuasion:.2,analysis:.55,handsOn:1,creativity:.35},req:{salary:40000,training:18,stability:4,travel:4,physical:5,remote:1},tags:['Practical skill','Visible value','Demand'],risk:'Physical demands and qualification time must be weighed against long-term earning potential.',experiment:'Spend half a day shadowing or assisting a competent practitioner and note which tasks energise or drain you.'}
+];
+
+let mode='rapid', answers={}, history=[], currentQuestion=null, minQuestions=16, maxQuestions=22;
+
+function startTest(selectedMode){
+  mode=selectedMode; answers={}; history=[]; currentQuestion=null;
+  minQuestions=selectedMode==='rapid'?16:24; maxQuestions=selectedMode==='rapid'?22:30;
+  document.getElementById('welcome').classList.add('hidden');
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('constraints').classList.add('hidden');
+  document.getElementById('test').classList.remove('hidden');
+  document.getElementById('modeText').textContent=selectedMode==='rapid'?'Rapid adaptive assessment':'Deep adaptive assessment';
+  nextQuestion();
+}
+
+function normalisedAnswer(v){return (v-1)/4}
+
+function profileVector(){
+  const sums={}, weights={}; dimensions.forEach(d=>{sums[d]=0;weights[d]=0});
+  Object.entries(answers).forEach(([id,val])=>{
+    const q=questionBank.find(x=>x.id===id); if(!q)return;
+    const n=normalisedAnswer(val);
+    Object.entries(q.w).forEach(([d,w])=>{
+      const signal=w>=0?n:(1-n);
+      sums[d]+=signal*Math.abs(w); weights[d]+=Math.abs(w);
+    });
+  });
+  const out={}; dimensions.forEach(d=>out[d]=weights[d]?sums[d]/weights[d]:.5); return out;
+}
+
+function similarity(a,b){
+  let dot=0,na=0,nb=0,count=0;
+  dimensions.forEach(d=>{ if(a[d]!==undefined&&b[d]!==undefined){dot+=a[d]*b[d];na+=a[d]*a[d];nb+=b[d]*b[d];count++}});
+  return count?dot/(Math.sqrt(na)*Math.sqrt(nb)):0;
+}
+
+function careerRanking(){
+  const p=profileVector();
+  return careers.map(c=>({c,score:similarity(p,c.vec)})).sort((a,b)=>b.score-a.score);
+}
+
+function chooseNextQuestion(){
+  const unanswered=questionBank.filter(q=>answers[q.id]===undefined);
+  if(!unanswered.length)return null;
+  if(Object.keys(answers).length<6){
+    const seeds=['q1','q2','q3','q4','q5','q6']; return questionBank.find(q=>q.id===seeds[Object.keys(answers).length]);
+  }
+  const top=careerRanking().slice(0,5).map(x=>x.c);
+  const counts={}; dimensions.forEach(d=>counts[d]=0);
+  Object.keys(answers).forEach(id=>{const q=questionBank.find(x=>x.id===id);Object.keys(q.w).forEach(d=>counts[d]++)});
+  let best=null,bestUtility=-1;
+  unanswered.forEach(q=>{
+    let utility=0;
+    Object.entries(q.w).forEach(([d,w])=>{
+      const vals=top.map(c=>c.vec[d]??.5); const mean=vals.reduce((a,b)=>a+b,0)/vals.length;
+      const variance=vals.reduce((a,b)=>a+(b-mean)**2,0)/vals.length;
+      utility+=variance*Math.abs(w)*(1/(1+counts[d]*.35));
+    });
+    const coverageBonus=Object.keys(q.w).some(d=>counts[d]===0)?.08:0;
+    if(utility+coverageBonus>bestUtility){bestUtility=utility+coverageBonus;best=q}
+  });
+  return best||unanswered[0];
+}
+
+function confidence(){
+  const n=Object.keys(answers).length;
+  if(n<6)return .25;
+  const ranking=careerRanking();
+  const margin=Math.max(0,ranking[0].score-ranking[1].score);
+  const coverage=dimensions.filter(d=>questionBank.filter(q=>answers[q.id]!==undefined&&q.w[d]!==undefined).length>0).length/dimensions.length;
+  return Math.min(.94,.35+(n/maxQuestions)*.35+coverage*.18+margin*1.7);
+}
+
+function shouldStop(){
+  const n=Object.keys(answers).length;
+  if(n>=maxQuestions)return true;
+  return n>=minQuestions && confidence()>=.78;
+}
+
+function nextQuestion(){
+  if(shouldStop()) return showConstraints();
+  currentQuestion=chooseNextQuestion();
+  if(!currentQuestion)return showConstraints();
+  history.push(currentQuestion.id);
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const n=Object.keys(answers).length+1;
+  document.getElementById('questionKicker').textContent=currentQuestion.cat;
+  document.getElementById('questionText').textContent=currentQuestion.text;
+  document.getElementById('progressText').textContent=`Question ${n} · confidence ${Math.round(confidence()*100)}%`;
+  document.getElementById('progressFill').style.width=`${Math.min(100,(Object.keys(answers).length/maxQuestions)*100)}%`;
+  document.getElementById('backBtn').disabled=history.length<=1;
+}
+
+function answer(value){
+  answers[currentQuestion.id]=value;
+  nextQuestion();
+}
+
+function back(){
+  if(history.length<=1)return;
+  const last=history.pop(); delete answers[last];
+  const prev=history[history.length-1]; delete answers[prev];
+  currentQuestion=questionBank.find(q=>q.id===prev); renderQuestion();
+}
+
+function showConstraints(){
+  document.getElementById('test').classList.add('hidden');
+  document.getElementById('constraints').classList.remove('hidden');
+}
+
+function constraintScore(c,cons){
+  let s=1;
+  if(cons.training<c.req.training) s-=Math.min(.45,(c.req.training-cons.training)/84*.65+.1);
+  if(cons.salary>0 && c.req.salary<cons.salary) s-=Math.min(.28,(cons.salary-c.req.salary)/50000);
+  s-=Math.abs(cons.travel-c.req.travel)*.045;
+  s-=Math.abs(cons.physical-c.req.physical)*.04;
+  s-=Math.abs(cons.remote-c.req.remote)*.045;
+  if(cons.stability>c.req.stability) s-=(cons.stability-c.req.stability)*.085;
+  return Math.max(.15,Math.min(1,s));
+}
+
+function pct(x){return Math.round(Math.max(0,Math.min(1,x))*100)}
+
+function finishTest(){
+  const cons={salary:+document.getElementById('salary').value,training:+document.getElementById('training').value,stability:+document.getElementById('stability').value,travel:+document.getElementById('travel').value,physical:+document.getElementById('physical').value,remote:+document.getElementById('remote').value};
+  const p=profileVector();
+  const ranked=careers.map(c=>{
+    const fit=similarity(p,c.vec); const reality=constraintScore(c,cons);
+    const ability=.52+(.25*p.mastery)+(.12*p.analysis)+(.11*p.structure);
+    const future=.54+(.18*c.vec.mastery)+(.12*c.vec.analysis)+(.08*c.vec.impact)+(.08*c.vec.creativity);
+    const total=fit*.46+reality*.24+ability*.16+future*.14;
+    return {c,fit,reality,ability:Math.min(1,ability),future:Math.min(1,future),total};
+  }).sort((a,b)=>b.total-a.total);
+  renderResults(p,cons,ranked);
+  localStorage.setItem('careerEngineResult',JSON.stringify({answers,cons,ranked:ranked.slice(0,5).map(x=>({name:x.c.name,total:x.total})),date:new Date().toISOString()}));
+  document.getElementById('constraints').classList.add('hidden'); document.getElementById('results').classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function topDimensions(p,n=5){return Object.entries(p).sort((a,b)=>b[1]-a[1]).slice(0,n)}
+const labels={R:'practical and technical activity',I:'investigation and problem-solving',A:'creative expression',S:'helping and developing people',E:'influence and enterprise',C:'structure and accuracy',autonomy:'autonomy',security:'security',impact:'meaningful impact',mastery:'expertise and mastery',variety:'variety',status:'recognition and progression',structure:'clear systems',collaboration:'collaboration',persuasion:'persuasion',analysis:'analysis',handsOn:'hands-on work',creativity:'creativity'};
+
+function renderResults(p,cons,ranked){
+  const top=ranked[0], second=ranked[1]; const conf=confidence();
+  document.getElementById('profileTitle').textContent=`${top.c.name} is your strongest current direction`;
+  document.getElementById('profileSummary').textContent=`Your profile currently favours ${labels[topDimensions(p,1)[0][0]]}, supported by ${labels[topDimensions(p,2)[1][0]]}. The result is a shortlist for testing, not a command to change career.`;
+  document.getElementById('confidenceBadge').textContent=`Confidence ${Math.round(conf*100)}%`;
+  document.getElementById('decisionScores').innerHTML=[['Personal fit',top.fit],['Capability fit',top.ability],['Reality fit',top.reality],['Future fit',top.future]].map(([l,s])=>`<div class="score-card"><div class="score">${pct(s)}</div><div class="label">${l}</div></div>`).join('');
+  document.getElementById('matches').innerHTML=ranked.slice(0,5).map((x,i)=>`<div class="match"><div><div class="match-title"><span class="rank">${i+1}</span><h3>${x.c.name}</h3></div><p class="small">${x.c.risk}</p><div class="tags">${x.c.tags.map(t=>`<span class="tag">${t}</span>`).join('')}<span class="tag">Reality ${pct(x.reality)}</span></div></div><div class="match-score">${pct(x.total)}</div></div>`).join('');
+  const drivers=topDimensions(p,6).map(([d,v])=>`<li><strong>${labels[d][0].toUpperCase()+labels[d].slice(1)}</strong> — ${pct(v)} profile strength</li>`).join('');
+  document.getElementById('drivers').innerHTML=drivers;
+  const risks=[];
+  if(cons.stability>=4&&top.c.req.stability<=2)risks.push('Your need for income stability conflicts with the uncertainty of the leading direction.');
+  if(cons.training<top.c.req.training)risks.push(`The strongest route normally needs more preparation than your selected ${cons.training}-month limit.`);
+  if(Math.abs(cons.remote-top.c.req.remote)>=3)risks.push('Your preferred working location differs materially from the normal pattern in this field.');
+  risks.push(top.c.risk); risks.push(`Your second-best direction, ${second.c.name}, is close enough to test in parallel.`);
+  document.getElementById('risks').innerHTML=risks.slice(0,4).map(r=>`<li>${r}</li>`).join('');
+  document.getElementById('experiment').textContent=top.c.experiment;
+  const prompt=`Act as my evidence-led AI career coach. Do not give me a generic list of jobs and do not treat one assessment as destiny.\n\nMY CURRENT ASSESSMENT\nPrimary direction: ${top.c.name} (${pct(top.total)}/100)\nAlternative direction: ${second.c.name} (${pct(second.total)}/100)\nPersonal fit: ${pct(top.fit)}/100\nCapability fit: ${pct(top.ability)}/100\nReality fit: ${pct(top.reality)}/100\nFuture fit: ${pct(top.future)}/100\nConfidence: ${Math.round(conf*100)}%\nStrongest drivers: ${topDimensions(p,6).map(([d])=>labels[d]).join(', ')}\nMinimum income: ${cons.salary?`£${cons.salary.toLocaleString('en-GB')}`:'not fixed'}\nTraining tolerance: ${cons.training} months\nNeed for stability: ${cons.stability}/5\nTravel willingness: ${cons.travel}/5\nRemote preference: ${cons.remote}/5\nPhysical-work preference: ${cons.physical}/5\n\nCOACHING RULES\n1. Separate facts, assumptions and uncertainties.\n2. Ask only one high-value question at a time.\n3. Prioritise routes that meet my financial and practical constraints.\n4. Convert recommendations into low-cost career experiments, conversations, portfolio tasks or applications.\n5. Track evidence that increases or decreases confidence in each route.\n6. Challenge attractive but unrealistic ideas respectfully.\n7. Finish each session with one decision, one next action and one measure of completion.\n\nStart by identifying the single uncertainty that most affects whether I should pursue ${top.c.name}.`;
+  document.getElementById('coachPrompt').textContent=prompt;
+}
+
+function copyCoachPrompt(){navigator.clipboard.writeText(document.getElementById('coachPrompt').textContent).then(()=>alert('Coach briefing copied.'))}
+function restart(){document.getElementById('results').classList.add('hidden');document.getElementById('welcome').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'})}
+</script>
+</body>
+</html>
